@@ -1,4 +1,4 @@
-# AHDM: Adaptive Hybrid Detection Model for Differentially Private Anomaly Detection in Cloud and Distributed Log Systems
+# AHDM: Adaptive Hybrid Detection Model Private Anomaly Detection in Cloud
 Code, experiment protocol and computed results accompanying the manuscript
 
 **Author:** Pradeep Deshpande  
