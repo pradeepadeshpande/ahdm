@@ -1,14 +1,12 @@
 # AHDM: Adaptive Hybrid Detection Model for Differentially Private Anomaly Detection in Cloud and Distributed Log Systems
-
 Code, experiment protocol and computed results accompanying the manuscript
-(PeerJ manuscript ID 149737, under review).
 
-**Author (as listed in the source files):** Pradeep Deshpande  
-**Affiliation / contact:** [TO BE FILLED BY THE AUTHORS]
+**Author:** Pradeep Deshpande  
+**Affiliation / contact:** BLDEA's V. P. Dr. P. G. Halakatti College of Engineering and Technology, Vijayapur, Karnataka, India
 
 ---
 
-## 1. Description
+1. Description
 
 AHDM detects anomalies in log-derived feature data while protecting the data with
 differential privacy (local Laplace perturbation). It combines:
@@ -22,7 +20,7 @@ This repository contains the full implementation, the experiment runner, the fig
 generator, and the results (CSV files and figures) that were produced by running the code.
 **Every number and figure is computed by the code; no result values are typed in.**
 
-## 2. Dataset Information
+ 2. Dataset Information
 
 The data are **not redistributed** here. Download them from the original sources and place
 them in `data/` (see Section 5).
@@ -34,7 +32,7 @@ them in `data/` (see Section 5).
 | BGL | Loghub (https://github.com/logpai/loghub) | `BGL_2k_log_structured.csv` (Loghub 2k sample) | log line | 2,000 lines, 10 features | 143 (7.1 %) |
 | Thunderbird | Loghub, Zenodo record 3227177 (`Thunderbird.tar.gz`) | a contiguous slice of the full log (see below) | log line | 20,000 lines (stratified subsample of a 200,000-line slice), 11 features | 881 (4.4 %) |
 
-### How labels are obtained (please read)
+How labels are obtained 
 
 * **OpenStack.** The public data contain no per-VM ground-truth labels. VM instances
   (identified by the `[instance: <uuid>]` tag in log lines) that occur in the
@@ -60,7 +58,7 @@ them in `data/` (see Section 5).
 * **Synthetic.** Anomalous sessions have larger transaction amounts, longer sessions and bursty
   access counts than normal sessions (see `generate_synthetic`).
 
-### Features
+ Features
 
 Feature definitions and the privacy sensitivity class (HIGH / MODERATE / LOW) of each feature
 are in `loaders.py` (`schema` dictionaries). Features that are constant in a training split are
@@ -68,7 +66,7 @@ dropped automatically; in the saved run (seed 0) OpenStack used 10 of its 13 can
 BGL and Thunderbird use a *template rarity* feature that is computed from training-split
 counts only.
 
-## 3. Code Information
+3. Code Information
 
 | File | Purpose |
 |---|---|
@@ -84,7 +82,7 @@ counts only.
 | `requirements.txt` | Library versions used for the saved results |
 | `results/` | Outputs of the saved run (see Section 5) |
 
-## 4. Requirements
+4. Requirements
 
 * Python 3.12 was used for the saved results (the authors also installed Python 3.11).
 * Libraries (versions used for the saved results, see `requirements.txt` and
@@ -104,7 +102,7 @@ pip install -r requirements.txt
 ```
 (or `python -m pip install torch numpy pandas scikit-learn scipy matplotlib`)
 
-## 5. Usage Instructions
+5. Usage Instructions
 
 **1. Get the data** and place these files in `data/`:
 
@@ -127,9 +125,7 @@ in the saved run):
 python run_experiments.py --data-dir data --datasets synthetic openstack bgl \
     --epsilons 0.5 1 2 5 10 inf --seeds 8 --out results
 ```
-
-Thunderbird (separate output folder; `--max-rows` is needed because OCSVM and LOF do not scale
-to >100k rows):
+Thunderbird (separate output folder; `--max-rows` is needed because OCSVM and LOF do not scale to >100k rows):
 
 ```
 python run_experiments.py --data-dir data --datasets thunderbird \
@@ -163,10 +159,9 @@ Configurations: A1 IF only; A2 DAE only; A3 equal-weight fusion; A4 AHDM with a 
 python make_figures.py --results results_combined --eps 1.0
 ```
 
-**Outputs** (in the `--out` folder):
+**5. Outputs** (in the `--out` folder):
 
 | File | Content |
-|---|---|
 | `metrics_long.csv` | one row per dataset x epsilon x seed x method: accuracy, precision, recall, F1, AUC-ROC, average precision, fusion weight `alpha`, per-record epsilon `record_epsilon`, DAE backend |
 | `summary.csv` | mean and standard deviation over seeds |
 | `significance.csv` | paired Wilcoxon signed-rank tests, AHDM vs each other method (AUC-ROC and F1) |
@@ -176,19 +171,9 @@ python make_figures.py --results results_combined --eps 1.0
 
 ## 6. Methodology
 
-**Data splitting.** For every seed (0-7) the data are split with a stratified 60/20/20
-train/validation/test split. MinMax scaling is fitted on the training split only; validation and
-test values are clipped to [0, 1]. Rarity features use training counts only.
+**Data splitting.** For every seed (0-7) the data are split with a stratified 60/20/20 train/validation/test split. MinMax scaling is fitted on the training split only; validation and test values are clipped to [0, 1]. Rarity features use training counts only.
 
-**Differential privacy.** Local Laplace perturbation is applied to every attribute of every
-split (train, validation, test). Values are in [0, 1], and these bounds are treated as public, so
-the sensitivity of each attribute is 1. The base epsilon is scaled per attribute by its
-sensitivity class: HIGH x0.5, MODERATE x1.0, LOW x2.0 (all attributes are perturbed, including
-LOW ones). Perturbed values are clipped to [0, 1] (post-processing). A record releases all of its
-attributes, so by sequential composition its privacy loss is the **sum of its attribute
-epsilons** (reported in `record_epsilon`; at base epsilon 1 this is 9.5 to 13 for the three
-datasets in `results/`). The base epsilon is therefore not the total per-record budget. The
-setting `inf` means no perturbation.
+**Differential privacy.** Local Laplace perturbation is applied to every attribute of every split (train, validation, test). Values are in [0, 1], and these bounds are treated as public, so the sensitivity of each attribute is 1. The base epsilon is scaled per attribute by its sensitivity class: HIGH x0.5, MODERATE x1.0, LOW x2.0 (all attributes are perturbed, including LOW ones). Perturbed values are clipped to [0, 1] (post-processing). A record releases all of its attributes, so by sequential composition its privacy loss is the **sum of its attribute epsilons** (reported in `record_epsilon`; at base epsilon 1 this is 9.5 to 13 for the three datasets in `results/`). The base epsilon is therefore not the total per-record budget. The setting `inf` means no perturbation.
 
 **Models.**
 * Isolation Forest (scikit-learn, 100 trees).
@@ -210,7 +195,7 @@ are computed at the validation-tuned threshold. Results are mean and standard de
 seeds. Significance: paired Wilcoxon signed-rank test across seeds (with 8 seeds the smallest
 possible two-sided p-value is about 0.0078); no multiple-comparison correction is applied.
 
-## 7. Results and reproducibility
+7. Results and reproducibility
 
 All results are in `results/` (synthetic, OpenStack, BGL), `results_thunderbird/` (Thunderbird)
 and `results_combined/` (all four datasets: `summary.csv`, `significance.csv`,
@@ -223,8 +208,7 @@ seed index; the synthetic data use seed 42; the `--max-rows` subsample uses a fi
 Re-running with the same library versions on the same hardware should reproduce the numbers;
 small differences may occur across platforms.
 
-## 8. Limitations
-
+8. Limitations
 * OpenStack labels are run-level, not verified per-VM ground truth; the abnormal run was recorded
   on a different date from the normal runs.
 * BGL results use the 2,000-line Loghub sample, not the full log. The Thunderbird slice was chosen
@@ -240,15 +224,8 @@ small differences may occur across platforms.
 * Because the per-record privacy loss is the sum over attributes, strong per-record guarantees
   are obtained only at small base epsilon, where detection performance is low; see `results/`.
 
-## 9. Citations
-
-If you use this code, please cite the accompanying manuscript:
-
-> Deshpande, P. [TITLE, VENUE, YEAR, DOI: TO BE FILLED BY THE AUTHORS]. (PeerJ manuscript ID
-> 149737, under review.)
-
+9. Citations
 Datasets and methods:
-
 * Loghub: Zhu, J., He, S., He, P., Liu, J., Lyu, M. R. *Loghub: A Large Collection of System Log
   Datasets for AI-driven Log Analytics.* ISSRE 2023. https://arxiv.org/abs/2008.06448 ;
   data: https://zenodo.org/records/3227177 ; https://github.com/logpai/loghub
@@ -270,14 +247,3 @@ Datasets and methods:
   NeurIPS 2019.
 * On the OpenStack label limitations: *A Critical Review of Common Log Data Sets Used for
   Evaluation of Sequence-Based Anomaly Detection Techniques.* https://dl.acm.org/doi/10.1145/3660768
-
-## 10. License and Contribution Guidelines
-
-**Code license:** [TO BE SELECTED BY THE AUTHORS. No `LICENSE` file is included yet; add one, for
-example MIT or Apache-2.0, before publication.]
-
-**Data:** the datasets are not distributed with this code and remain under the terms of their
-original providers (see the Loghub repository). Please cite the sources listed above.
-
-**Contributions:** issues and pull requests are welcome. Please keep the code reproducible:
-fixed seeds, no hardcoded results, and no silent fallbacks (the DAE must run with PyTorch).
